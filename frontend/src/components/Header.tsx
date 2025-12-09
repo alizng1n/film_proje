@@ -21,29 +21,22 @@ export const Header = () => {
                 <nav className="flex items-center gap-1 sm:gap-2">
                     <Link to="/">
                         <span className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive('/')
-                                ? 'bg-indigo-50 text-indigo-700'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                             }`}>
                             Ana Sayfa
                         </span>
                     </Link>
                     <Link to="/selected">
                         <span className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${isActive('/selected')
-                                ? 'bg-indigo-50 text-indigo-700'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                            ? 'bg-indigo-50 text-indigo-700'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                             }`}>
                             <CheckCircle size={18} />
                             Seçimlerim
                         </span>
                     </Link>
-                    <Link to="/test">
-                        <span className={`hidden sm:inline-block px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive('/test')
-                                ? 'bg-indigo-50 text-indigo-700'
-                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                            }`}>
-                            UI Test
-                        </span>
-                    </Link>
+
                 </nav>
             </div>
         </header>

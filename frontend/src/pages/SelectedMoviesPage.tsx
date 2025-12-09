@@ -21,7 +21,7 @@ export const SelectedMoviesPage = ({ selectedMovies, onToggleSelect }: SelectedM
                 </div>
 
                 {selectedMovies.length > 0 && (
-                    <Link to="/recommendations">
+                    <Link to="/recommendations" state={{ selectedMovies }}>
                         <Button size="lg" className="w-full md:w-auto shadow-indigo-200 shadow-lg">
                             Önerileri Göster
                             <ArrowRight className="ml-2 h-5 w-5" />

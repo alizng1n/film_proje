@@ -1,19 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { MovieCard } from '../components/MovieCard';
 import { type Movie } from '../types';
-
-// Dummy Data
-const MOCK_MOVIES: Movie[] = [
-    { id: 1, title: 'Inception', year: '2010', poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&q=80&w=500' },
-    { id: 2, title: 'Interstellar', year: '2014', poster: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?auto=format&fit=crop&q=80&w=500' },
-    { id: 3, title: 'The Dark Knight', year: '2008', poster: 'https://images.unsplash.com/photo-1478720568477-152d9b164e63?auto=format&fit=crop&q=80&w=500' },
-    { id: 4, title: 'Avatar', year: '2009', poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&q=80&w=500' },
-    { id: 5, title: 'Dune', year: '2021', poster: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?auto=format&fit=crop&q=80&w=500' },
-    { id: 6, title: 'Blade Runner 2049', year: '2017', poster: 'https://images.unsplash.com/photo-1504609773096-104ff2c73ba4?auto=format&fit=crop&q=80&w=500' },
-    { id: 7, title: 'The Matrix', year: '1999', poster: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&q=80&w=500' },
-    { id: 8, title: 'Arrival', year: '2016', poster: 'https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?auto=format&fit=crop&q=80&w=500' },
-];
+import { searchMovies } from '../services/api';
 
 interface HomePageProps {
     selectedMovies: Movie[];
@@ -22,10 +11,24 @@ interface HomePageProps {
 
 export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [movies, setMovies] = useState<Movie[]>([]);
+    const [loading, setLoading] = useState(false);
 
-    const filteredMovies = MOCK_MOVIES.filter(movie =>
-        movie.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    useEffect(() => {
+        const fetchMovies = async () => {
+            if (searchTerm.length > 2) {
+                setLoading(true);
+                const results = await searchMovies(searchTerm);
+                setMovies(results);
+                setLoading(false);
+            } else {
+                setMovies([]);
+            }
+        };
+
+        const timeoutId = setTimeout(fetchMovies, 500);
+        return () => clearTimeout(timeoutId);
+    }, [searchTerm]);
 
     return (
         <div className="space-y-8 animate-fade-in">
@@ -46,7 +49,7 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
                         </div>
                         <input
                             type="text"
-                            placeholder="Film ara..."
+                            placeholder="Film ara... (En az 3 karakter)"
                             className="block w-full pl-10 pr-3 py-4 border-none rounded-xl leading-5 bg-white/10 backdrop-blur-md text-white placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-white/50 sm:text-lg transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -58,13 +61,19 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
             {/* Movie Grid */}
             <section className="container mx-auto px-4 pb-12">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Popüler Filmler</h2>
-                    <span className="text-sm text-gray-500">{filteredMovies.length} film bulundu</span>
+                    <h2 className="text-2xl font-bold text-gray-800">
+                        {searchTerm.length > 2 ? 'Arama Sonuçları' : 'Aramaya Başlayın'}
+                    </h2>
+                    <span className="text-sm text-gray-500">{movies.length} film bulundu</span>
                 </div>
 
-                {filteredMovies.length > 0 ? (
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    </div>
+                ) : movies.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                        {filteredMovies.map((movie) => {
+                        {movies.map((movie) => {
                             const isSelected = selectedMovies.some(m => m.id === movie.id);
                             return (
                                 <MovieCard
@@ -78,7 +87,9 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
                     </div>
                 ) : (
                     <div className="text-center py-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                        <p className="text-gray-500 text-lg">Aradığınız kriterlere uygun film bulunamadı.</p>
+                        <p className="text-gray-500 text-lg">
+                            {searchTerm.length > 2 ? 'Aradığınız kriterlere uygun film bulunamadı.' : 'Film aramak için yukarıya en az 3 harf yazın.'}
+                        </p>
                     </div>
                 )}
             </section>
