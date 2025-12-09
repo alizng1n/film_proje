@@ -5,7 +5,7 @@ from services.tmdb_service import search_movies, get_recommendations
 
 app = FastAPI()
 
-# CORS
+
 origins = [
     "http://localhost:5173",
     "http://localhost:3000",
