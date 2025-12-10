@@ -4,6 +4,8 @@ import { Header } from './components/Header';
 import { AppRoutes } from './routes/AppRoutes';
 import { type Movie } from './types';
 
+import { ThemeProvider } from './context/ThemeContext';
+
 function App() {
   const [selectedMovies, setSelectedMovies] = useState<Movie[]>([]);
 
@@ -19,21 +21,19 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
-        <Header />
-        <main className="flex-1 w-full">
-          <AppRoutes
-            selectedMovies={selectedMovies}
-            onToggleSelect={handleToggleSelect}
-          />
-        </main>
-
-        <footer className="py-6 text-center text-gray-400 text-sm border-t border-gray-200 mt-20">
-          <p>© 2024 Film Öneri Sistemi. Tüm hakları saklıdır.</p>
-        </footer>
-      </div>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col font-sans text-gray-900 dark:text-gray-100 transition-colors duration-200">
+          <Header />
+          <main className="flex-1 w-full">
+            <AppRoutes
+              selectedMovies={selectedMovies}
+              onToggleSelect={handleToggleSelect}
+            />
+          </main>
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

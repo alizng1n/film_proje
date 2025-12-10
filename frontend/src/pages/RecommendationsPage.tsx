@@ -1,16 +1,33 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { RefreshCw, Home } from 'lucide-react';
-import { type Movie } from '../types';
+import { type Movie, type MovieDetails } from '../types';
 import { MovieCard } from '../components/MovieCard';
 import { Button } from '../components/Button';
+import { MovieDetailsModal } from '../components/MovieDetailsModal';
 import { useState, useEffect } from 'react';
-import { getRecommendations } from '../services/api';
+import { getRecommendations, getMovieDetails } from '../services/api';
 
 export const RecommendationsPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [recommendations, setRecommendations] = useState<Movie[]>([]);
+    const [selectedDetailMovie, setSelectedDetailMovie] = useState<MovieDetails | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleMovieClick = async (movie: Movie) => {
+        try {
+            // First set what we have to show immediate feedback if needed, 
+            // but for full details we fetch
+            const details = await getMovieDetails(movie.id);
+            if (details) {
+                setSelectedDetailMovie(details);
+                setIsModalOpen(true);
+            }
+        } catch (error) {
+            console.error("Error fetching details:", error);
+        }
+    };
 
     useEffect(() => {
         const fetchRecommendations = async () => {
@@ -64,8 +81,8 @@ export const RecommendationsPage = () => {
                 <span className="inline-block px-4 py-1.5 rounded-full bg-green-100 text-green-700 font-semibold text-sm tracking-wide uppercase">
                     Analiz Tamamlandı
                 </span>
-                <h1 className="text-4xl font-bold text-gray-900">Sizin İçin Önerilenler</h1>
-                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Sizin İçin Önerilenler</h1>
+                <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                     Seçtiğiniz filmlere dayanarak, bu yapımları da seveceğinizi düşünüyoruz.
                 </p>
             </div>
@@ -73,7 +90,11 @@ export const RecommendationsPage = () => {
             {recommendations.length > 0 ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {recommendations.map((movie) => (
-                        <MovieCard key={movie.id} movie={movie} />
+                        <MovieCard
+                            key={movie.id}
+                            movie={movie}
+                            onDetailsClick={handleMovieClick}
+                        />
                     ))}
                 </div>
             ) : (
@@ -82,7 +103,7 @@ export const RecommendationsPage = () => {
                 </div>
             )}
 
-            <div className="flex justify-center gap-4 mt-12 pt-8 border-t border-gray-200">
+            <div className="flex justify-center gap-4 mt-12 pt-8 border-t border-gray-200 dark:border-gray-800">
                 <Button variant="outline" onClick={() => window.location.reload()} >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Yenile
@@ -92,6 +113,12 @@ export const RecommendationsPage = () => {
                     Ana Sayfaya Dön
                 </Button>
             </div>
+
+            <MovieDetailsModal
+                movie={selectedDetailMovie}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 };

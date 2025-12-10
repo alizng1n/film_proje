@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Movie } from '../types';
+import type { Movie, MovieDetails } from '../types';
 
 const API_Base_URL = 'http://localhost:8000/api';
 
@@ -28,3 +28,14 @@ export const getRecommendations = async (selectedMovieIds: number[]): Promise<Mo
         return [];
     }
 };
+
+export const getMovieDetails = async (movieId: number): Promise<MovieDetails | null> => {
+    try {
+        const response = await axios.get(`${API_Base_URL}/movies/${movieId}`);
+        return response.data;
+    } catch (error) {
+        console.error("Movie details error:", error);
+        return null;
+    }
+};
+

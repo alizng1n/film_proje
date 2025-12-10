@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
-from services.tmdb_service import search_movies, get_recommendations
+from services.tmdb_service import search_movies, get_recommendations, get_full_movie_details
 
 app = FastAPI()
 
@@ -70,4 +70,24 @@ async def recommendations_endpoint(movie_ids: str):
         })
 
     return transformed_results
+
+@app.get("/api/movies/{movie_id}")
+async def get_movie_details_endpoint(movie_id: int):
+    details = await get_full_movie_details(movie_id)
+    if not details:
+        return {"error": "Movie not found"}
+    
+    # Transform for frontend consistency if needed
+    poster_path = details.get("poster_path")
+    poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image"
+    
+    backdrop_path = details.get("backdrop_path")
+    backdrop_url = f"https://image.tmdb.org/t/p/original{backdrop_path}" if backdrop_path else None
+
+    return {
+        **details,
+        "poster": poster_url,
+        "backdrop": backdrop_url,
+        "year": details.get("release_date", "")[:4] if details.get("release_date") else ""
+    }
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { MovieCard } from '../components/MovieCard';
-import { type Movie } from '../types';
-import { searchMovies } from '../services/api';
+import { type Movie, type MovieDetails } from '../types';
+import { searchMovies, getMovieDetails } from '../services/api';
+import { MovieDetailsModal } from '../components/MovieDetailsModal';
 
 interface HomePageProps {
     selectedMovies: Movie[];
@@ -13,6 +14,16 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(false);
+    const [selectedDetailMovie, setSelectedDetailMovie] = useState<MovieDetails | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleDetailsClick = async (movie: Movie) => {
+        const details = await getMovieDetails(movie.id);
+        if (details) {
+            setSelectedDetailMovie(details);
+            setIsModalOpen(true);
+        }
+    };
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -61,10 +72,10 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
             {/* Movie Grid */}
             <section className="container mx-auto px-4 pb-12">
                 <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                         {searchTerm.length > 2 ? 'Arama Sonuçları' : 'Aramaya Başlayın'}
                     </h2>
-                    <span className="text-sm text-gray-500">{movies.length} film bulundu</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">{movies.length} film bulundu</span>
                 </div>
 
                 {loading ? (
@@ -81,18 +92,25 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
                                     movie={movie}
                                     isSelected={isSelected}
                                     onToggleSelect={onToggleSelect}
+                                    onDetailsClick={handleDetailsClick}
                                 />
                             );
                         })}
                     </div>
                 ) : (
-                    <div className="text-center py-20 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
-                        <p className="text-gray-500 text-lg">
+                    <div className="text-center py-20 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">
                             {searchTerm.length > 2 ? 'Aradığınız kriterlere uygun film bulunamadı.' : 'Film aramak için yukarıya en az 3 harf yazın.'}
                         </p>
                     </div>
                 )}
             </section>
+
+            <MovieDetailsModal
+                movie={selectedDetailMovie}
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </div>
     );
 };

@@ -6,9 +6,10 @@ interface MovieCardProps {
     movie: Movie;
     isSelected?: boolean;
     onToggleSelect?: (movie: Movie) => void;
+    onDetailsClick?: (movie: Movie) => void;
 }
 
-export const MovieCard = ({ movie, isSelected, onToggleSelect }: MovieCardProps) => {
+export const MovieCard = ({ movie, isSelected, onToggleSelect, onDetailsClick }: MovieCardProps) => {
     return (
         <div className="group relative bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             {/* Poster Image */}
@@ -50,7 +51,12 @@ export const MovieCard = ({ movie, isSelected, onToggleSelect }: MovieCardProps)
 
                 {/* Card Footer action for mobile or additional interaction */}
                 <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
-                    <Button size="sm" variant="ghost" className="text-xs px-2 h-7 w-full">
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs px-2 h-7 w-full"
+                        onClick={() => onDetailsClick?.(movie)}
+                    >
                         Detaylar
                     </Button>
                 </div>
