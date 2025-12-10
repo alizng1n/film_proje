@@ -39,3 +39,13 @@ export const getMovieDetails = async (movieId: number): Promise<MovieDetails | n
     }
 };
 
+export const getWeeklyTrends = async (): Promise<Movie[]> => {
+    try {
+        const response = await axios.get(`${API_Base_URL}/movies/trends`);
+        return response.data;
+    } catch (error) {
+        console.error("Trends error:", error);
+        return [];
+    }
+};
+

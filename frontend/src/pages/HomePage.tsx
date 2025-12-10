@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { MovieCard } from '../components/MovieCard';
 import { type Movie, type MovieDetails } from '../types';
-import { searchMovies, getMovieDetails } from '../services/api';
+import { searchMovies, getMovieDetails, getWeeklyTrends } from '../services/api';
 import { MovieDetailsModal } from '../components/MovieDetailsModal';
+import { FeaturedCarousel } from '../components/FeaturedCarousel';
 
 interface HomePageProps {
     selectedMovies: Movie[];
@@ -13,6 +14,7 @@ interface HomePageProps {
 export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [movies, setMovies] = useState<Movie[]>([]);
+    const [trends, setTrends] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedDetailMovie, setSelectedDetailMovie] = useState<MovieDetails | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,6 +26,15 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
             setIsModalOpen(true);
         }
     };
+
+    // Fetch trends on mount
+    useEffect(() => {
+        const fetchTrends = async () => {
+            const data = await getWeeklyTrends();
+            setTrends(data);
+        };
+        fetchTrends();
+    }, []);
 
     useEffect(() => {
         const fetchMovies = async () => {
@@ -68,6 +79,14 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
                     </div>
                 </div>
             </section>
+
+            {/* Featured Trends Carousel (Only show when not searching) */}
+            {searchTerm.length < 3 && trends.length > 0 && (
+                <FeaturedCarousel
+                    movies={trends}
+                    onMovieClick={handleDetailsClick}
+                />
+            )}
 
             {/* Movie Grid */}
             <section className="container mx-auto px-4 pb-12">

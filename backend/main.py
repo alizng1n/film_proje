@@ -71,6 +71,27 @@ async def recommendations_endpoint(movie_ids: str):
 
     return transformed_results
 
+    return transformed_results
+
+@app.get("/api/movies/trends")
+async def get_weekly_trends_endpoint():
+    from services.tmdb_service import get_weekly_trends
+    results = await get_weekly_trends()
+    
+    transformed_results = []
+    for m in results:
+        poster_path = m.get("poster_path")
+        poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image"
+        
+        transformed_results.append({
+            "id": m.get("id"),
+            "title": m.get("title"),
+            "poster": poster_url,
+            "year": m.get("release_date", "")[:4] if m.get("release_date") else ""
+        })
+        
+    return transformed_results
+
 @app.get("/api/movies/{movie_id}")
 async def get_movie_details_endpoint(movie_id: int):
     details = await get_full_movie_details(movie_id)

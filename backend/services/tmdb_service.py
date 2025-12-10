@@ -112,3 +112,16 @@ async def get_full_movie_details(movie_id: int):
             "director": director,
             "cast": cast
         }
+
+async def get_weekly_trends():
+    if not TMDB_API_KEY:
+        return []
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"{BASE_URL}/trending/movie/week",
+            params={"api_key": TMDB_API_KEY, "language": "tr-TR"}
+        )
+        if response.status_code == 200:
+            return response.json().get("results", [])
+        return []
