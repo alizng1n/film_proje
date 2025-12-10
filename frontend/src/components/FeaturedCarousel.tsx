@@ -4,11 +4,15 @@ import { type Movie } from '../types';
 interface FeaturedCarouselProps {
     movies: Movie[];
     onMovieClick: (movie: Movie) => void;
+    paused?: boolean;
 }
 
-export const FeaturedCarousel = ({ movies, onMovieClick }: FeaturedCarouselProps) => {
+export const FeaturedCarousel = ({ movies, onMovieClick, paused = false }: FeaturedCarouselProps) => {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const [isPaused, setIsPaused] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [startX, setStartX] = useState(0);
+    const [scrollLeft, setScrollLeft] = useState(0);
 
     // Auto-scroll logic
     useEffect(() => {
@@ -16,20 +20,16 @@ export const FeaturedCarousel = ({ movies, onMovieClick }: FeaturedCarouselProps
         if (!scrollContainer) return;
 
         let animationFrameId: number;
-        let scrollPos = 0;
-        const speed = 0.5; // Pixels per frame
+        const speed = 0.5;
 
         const animate = () => {
-            if (!isPaused && scrollContainer) {
-                scrollPos += speed;
-
-                // Reset when we've scrolled past the first set of items
-                // (We will duplicate items to create infinite effect)
-                if (scrollPos >= scrollContainer.scrollWidth / 2) {
-                    scrollPos = 0;
+            // Stop if externally paused, hovered, or dragging
+            if (!paused && !isHovered && !isDragging && scrollContainer) {
+                if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth / 2) {
+                    scrollContainer.scrollLeft = 0;
+                } else {
+                    scrollContainer.scrollLeft += speed;
                 }
-
-                scrollContainer.scrollLeft = scrollPos;
             }
             animationFrameId = requestAnimationFrame(animate);
         };
@@ -37,7 +37,33 @@ export const FeaturedCarousel = ({ movies, onMovieClick }: FeaturedCarouselProps
         animationFrameId = requestAnimationFrame(animate);
 
         return () => cancelAnimationFrame(animationFrameId);
-    }, [isPaused, movies]);
+    }, [paused, isHovered, isDragging, movies]);
+
+    // Drag Handlers
+    const handleMouseDown = (e: React.MouseEvent) => {
+        setIsDragging(true);
+        if (scrollRef.current) {
+            setStartX(e.pageX - scrollRef.current.offsetLeft);
+            setScrollLeft(scrollRef.current.scrollLeft);
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setIsDragging(false);
+        setIsHovered(false);
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (!isDragging || !scrollRef.current) return;
+        e.preventDefault();
+        const x = e.pageX - scrollRef.current.offsetLeft;
+        const walk = (x - startX) * 2; // Scroll-fast
+        scrollRef.current.scrollLeft = scrollLeft - walk;
+    };
 
     if (movies.length === 0) return null;
 
@@ -45,7 +71,7 @@ export const FeaturedCarousel = ({ movies, onMovieClick }: FeaturedCarouselProps
     const displayMovies = [...movies, ...movies];
 
     return (
-        <div className="w-full overflow-hidden py-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border-y border-gray-200 dark:border-gray-700">
+        <div className="w-full overflow-hidden py-8 bg-gradient-to-r from-gray-50 to-white dark:from-gray-900 dark:to-gray-800 border-y border-gray-200 dark:border-gray-700 select-none">
             <div className="container mx-auto px-4 mb-4">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     <span className="text-indigo-600 dark:text-indigo-400">🔥</span> Haftanın Trendleri
@@ -54,25 +80,30 @@ export const FeaturedCarousel = ({ movies, onMovieClick }: FeaturedCarouselProps
 
             <div
                 className="relative w-full"
-                onMouseEnter={() => setIsPaused(true)}
-                onMouseLeave={() => setIsPaused(false)}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={handleMouseLeave}
             >
                 <div
                     ref={scrollRef}
-                    className="flex gap-6 overflow-x-hidden whitespace-nowrap px-4 pb-4"
-                    style={{ scrollBehavior: 'auto' }} // Disable smooth scroll for JS animation
+                    className={`flex gap-6 overflow-x-hidden whitespace-nowrap px-4 pb-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    style={{ scrollBehavior: 'auto' }}
+                    onMouseDown={handleMouseDown}
+                    onMouseUp={handleMouseUp}
+                    onMouseMove={handleMouseMove}
                 >
                     {displayMovies.map((movie, index) => (
                         <div
                             key={`${movie.id}-${index}`}
                             className="inline-block w-48 shrink-0 cursor-pointer transform transition-transform hover:scale-105"
-                            onClick={() => onMovieClick(movie)}
+                            onClick={() => {
+                                if (!isDragging) onMovieClick(movie);
+                            }}
                         >
                             <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-lg mb-2 relative group">
                                 <img
                                     src={movie.poster}
                                     alt={movie.title}
-                                    className="w-full h-full object-cover"
+                                    className="w-full h-full object-cover pointer-events-none"
                                     loading="lazy"
                                 />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

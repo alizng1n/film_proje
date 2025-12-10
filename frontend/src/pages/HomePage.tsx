@@ -85,6 +85,7 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
                 <FeaturedCarousel
                     movies={trends}
                     onMovieClick={handleDetailsClick}
+                    paused={isModalOpen}
                 />
             )}
 
