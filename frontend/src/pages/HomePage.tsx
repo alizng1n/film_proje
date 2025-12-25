@@ -84,6 +84,8 @@ export const HomePage = ({ selectedMovies, onToggleSelect }: HomePageProps) => {
             {searchTerm.length < 3 && trends.length > 0 && (
                 <FeaturedCarousel
                     movies={trends}
+                    selectedMovies={selectedMovies}
+                    onToggleSelect={onToggleSelect}
                     onMovieClick={handleDetailsClick}
                     paused={isModalOpen}
                 />

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { Header } from './components/Header';
 import { AppRoutes } from './routes/AppRoutes';
@@ -7,7 +7,16 @@ import { type Movie } from './types';
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
-  const [selectedMovies, setSelectedMovies] = useState<Movie[]>([]);
+  const [selectedMovies, setSelectedMovies] = useState<Movie[]>(() => {
+    // Initialize from local storage
+    const saved = localStorage.getItem('selectedMovies');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Persist to local storage
+  useEffect(() => {
+    localStorage.setItem('selectedMovies', JSON.stringify(selectedMovies));
+  }, [selectedMovies]);
 
   const handleToggleSelect = (movie: Movie) => {
     setSelectedMovies(prev => {
@@ -20,6 +29,10 @@ function App() {
     });
   };
 
+  const handleClearSelection = () => {
+    setSelectedMovies([]);
+  };
+
   return (
     <ThemeProvider>
       <BrowserRouter>
@@ -29,6 +42,7 @@ function App() {
             <AppRoutes
               selectedMovies={selectedMovies}
               onToggleSelect={handleToggleSelect}
+              onClearSelection={handleClearSelection}
             />
           </main>
         </div>

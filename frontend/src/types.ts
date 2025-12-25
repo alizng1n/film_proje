@@ -3,6 +3,7 @@ export interface Movie {
     title: string;
     poster: string;
     year?: string;
+    vote_average?: number;
 }
 
 export interface MovieDetails extends Movie {
@@ -15,3 +16,12 @@ export interface MovieDetails extends Movie {
     cast?: string[];
 }
 
+export interface SequelGroup {
+    title: string;
+    movies: Movie[];
+}
+
+export interface RecommendationsResponse {
+    sequels: SequelGroup[];
+    recommendations: Movie[];
+}

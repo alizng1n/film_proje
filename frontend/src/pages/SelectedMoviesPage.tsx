@@ -10,9 +10,10 @@ import { getMovieDetails } from '../services/api';
 interface SelectedMoviesPageProps {
     selectedMovies: Movie[];
     onToggleSelect: (movie: Movie) => void;
+    onClearSelection: () => void;
 }
 
-export const SelectedMoviesPage = ({ selectedMovies, onToggleSelect }: SelectedMoviesPageProps) => {
+export const SelectedMoviesPage = ({ selectedMovies, onToggleSelect, onClearSelection }: SelectedMoviesPageProps) => {
     const [selectedDetailMovie, setSelectedDetailMovie] = useState<MovieDetails | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -35,12 +36,18 @@ export const SelectedMoviesPage = ({ selectedMovies, onToggleSelect }: SelectedM
                 </div>
 
                 {selectedMovies.length > 0 && (
-                    <Link to="/recommendations" state={{ selectedMovies }}>
-                        <Button size="lg" className="w-full md:w-auto shadow-indigo-200 shadow-lg">
-                            Önerileri Göster
-                            <ArrowRight className="ml-2 h-5 w-5" />
+                    <div className="flex gap-3">
+                        <Button variant="ghost" onClick={onClearSelection} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                            <Trash2 className="mr-2 h-5 w-5" />
+                            Tümünü Temizle
                         </Button>
-                    </Link>
+                        <Link to="/recommendations" state={{ selectedMovies }}>
+                            <Button size="lg" className="w-full md:w-auto shadow-indigo-200 shadow-lg">
+                                Önerileri Göster
+                                <ArrowRight className="ml-2 h-5 w-5" />
+                            </Button>
+                        </Link>
+                    </div>
                 )}
             </div>
 

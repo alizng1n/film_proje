@@ -39,39 +39,53 @@ async def search_movies_endpoint(query: str):
             "id": m.get("id"),
             "title": m.get("title"),
             "poster": poster_url,
-            "year": m.get("release_date", "")[:4] if m.get("release_date") else ""
+            "year": m.get("release_date", "")[:4] if m.get("release_date") else "",
+            "vote_average": m.get("vote_average", 0)
         })
         
     return transformed_results
 
 @app.get("/api/recommendations")
 async def recommendations_endpoint(movie_ids: str):
-    # Simple logic: get recommendations for the first selected movie for now
+    from services.tmdb_service import get_recommendations_with_sequels
+    
     if not movie_ids:
-        return []
+        return {"sequels": [], "recommendations": []}
         
     try:
         ids_list = [int(id_str) for id_str in movie_ids.split(",") if id_str.strip()]
     except ValueError:
-        return []
+        return {"sequels": [], "recommendations": []}
         
-    results = await get_recommendations(ids_list)
+    data = await get_recommendations_with_sequels(ids_list)
     
-    transformed_results = []
-    for m in results:
+    # Helper to transform movie data
+    def transform_movie(m):
         poster_path = m.get("poster_path")
         poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else "https://via.placeholder.com/500x750?text=No+Image"
-        
-        transformed_results.append({
+        return {
             "id": m.get("id"),
             "title": m.get("title"),
             "poster": poster_url,
-            "year": m.get("release_date", "")[:4] if m.get("release_date") else ""
+            "year": m.get("release_date", "")[:4] if m.get("release_date") else "",
+            "vote_average": m.get("vote_average", 0)
+        }
+
+    # Transform recommendations
+    transformed_recs = [transform_movie(m) for m in data["recommendations"]]
+    
+    # Transform sequels
+    transformed_sequels = []
+    for seq_group in data["sequels"]:
+        transformed_sequels.append({
+            "title": seq_group["title"],
+            "movies": [transform_movie(m) for m in seq_group["movies"]]
         })
 
-    return transformed_results
-
-    return transformed_results
+    return {
+        "sequels": transformed_sequels,
+        "recommendations": transformed_recs
+    }
 
 @app.get("/api/movies/trends")
 async def get_weekly_trends_endpoint():
@@ -87,7 +101,8 @@ async def get_weekly_trends_endpoint():
             "id": m.get("id"),
             "title": m.get("title"),
             "poster": poster_url,
-            "year": m.get("release_date", "")[:4] if m.get("release_date") else ""
+            "year": m.get("release_date", "")[:4] if m.get("release_date") else "",
+            "vote_average": m.get("vote_average", 0)
         })
         
     return transformed_results
@@ -109,6 +124,7 @@ async def get_movie_details_endpoint(movie_id: int):
         **details,
         "poster": poster_url,
         "backdrop": backdrop_url,
-        "year": details.get("release_date", "")[:4] if details.get("release_date") else ""
+        "year": details.get("release_date", "")[:4] if details.get("release_date") else "",
+        "vote_average": details.get("vote_average", 0)
     }
 

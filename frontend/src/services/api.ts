@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Movie, MovieDetails } from '../types';
+import type { Movie, MovieDetails, RecommendationsResponse } from '../types';
 
 const API_Base_URL = 'http://localhost:8000/api';
 
@@ -16,8 +16,8 @@ export const searchMovies = async (query: string): Promise<Movie[]> => {
     }
 };
 
-export const getRecommendations = async (selectedMovieIds: number[]): Promise<Movie[]> => {
-    if (selectedMovieIds.length === 0) return [];
+export const getRecommendations = async (selectedMovieIds: number[]): Promise<RecommendationsResponse> => {
+    if (selectedMovieIds.length === 0) return { sequels: [], recommendations: [] };
     try {
         const response = await axios.get(`${API_Base_URL}/recommendations`, {
             params: { movie_ids: selectedMovieIds.join(',') }
@@ -25,7 +25,7 @@ export const getRecommendations = async (selectedMovieIds: number[]): Promise<Mo
         return response.data;
     } catch (error) {
         console.error("Recommendation error:", error);
-        return [];
+        return { sequels: [], recommendations: [] };
     }
 };
 

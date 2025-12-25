@@ -8,9 +8,10 @@ import { type Movie } from '../types';
 interface AppRoutesProps {
     selectedMovies: Movie[];
     onToggleSelect: (movie: Movie) => void;
+    onClearSelection: () => void;
 }
 
-export const AppRoutes = ({ selectedMovies, onToggleSelect }: AppRoutesProps) => {
+export const AppRoutes = ({ selectedMovies, onToggleSelect, onClearSelection }: AppRoutesProps) => {
     return (
         <Routes>
             <Route
@@ -19,7 +20,7 @@ export const AppRoutes = ({ selectedMovies, onToggleSelect }: AppRoutesProps) =>
             />
             <Route
                 path="/selected"
-                element={<SelectedMoviesPage selectedMovies={selectedMovies} onToggleSelect={onToggleSelect} />}
+                element={<SelectedMoviesPage selectedMovies={selectedMovies} onToggleSelect={onToggleSelect} onClearSelection={onClearSelection} />}
             />
             <Route path="/recommendations" element={<RecommendationsPage />} />
         </Routes>
